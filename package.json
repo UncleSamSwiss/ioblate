@@ -1,0 +1,42 @@
+{
+  "name": "ioblate",
+  "version": "0.0.1",
+  "description": "ioBroker translation converter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "ioblate": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UncleSamSwiss/ioblate.git"
+  },
+  "keywords": [
+    "ioBroker",
+    "weblate",
+    "JSON"
+  ],
+  "author": {
+    "name": "UncleSamSwiss",
+    "email": "samuel.weibel@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "UncleSamSwiss",
+      "email": "samuel.weibel@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/UncleSamSwiss/ioblate/issues"
+  },
+  "homepage": "https://github.com/UncleSamSwiss/ioblate",
+  "readme": "https://github.com/UncleSamSwiss/ioblate/blob/master/README.md",
+  "dependencies": {
+    "esprima": "^4.0.1",
+    "glob": "^7.1.3",
+    "safe-eval": "^0.4.1"
+  }
+}
