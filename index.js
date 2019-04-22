@@ -24,7 +24,7 @@ function load() {
   // search all *.js files for translations
   glob('{,!(node_modules)/**/}*.js', function(err, files) {
     let foundTranslations = {};
-    let allKeys = {};
+    let allKeys = [];
     files.forEach(file => {
       try {
         let content = fs.readFileSync(file, { encoding: 'utf-8' });
@@ -40,13 +40,11 @@ function load() {
             let json = safeEval(content.substring(...right.range));
             for (const [key, languages] of Object.entries(json)) {
               console.log(' ', key, languages);
+              const fullKey = `${file}#${key}`;
               for (const [lang, translation] of Object.entries(languages)) {
                 foundTranslations[lang] = foundTranslations[lang] || {};
-                foundTranslations[lang][file] =
-                  foundTranslations[lang][file] || {};
-                foundTranslations[lang][file][key] = translation;
-                allKeys[file] = allKeys[file] || [];
-                allKeys[file].push(key);
+                foundTranslations[lang][fullKey] = translation;
+                allKeys.push(fullKey);
               }
             }
           }
@@ -58,13 +56,13 @@ function load() {
 
     //console.log(foundTranslations);
     fs.mkdirSync('./i18n/', { recursive: true });
-    for (const [lang, fileTranslations] of Object.entries(foundTranslations)) {
+    for (const [lang, translations] of Object.entries(foundTranslations)) {
       let filename = `./i18n/words-${lang}.json`;
       let data = null;
       if (!fs.existsSync(filename)) {
         // if the file doesn't exist, we can simply create it with the JSON
         console.log(`Creating ${filename}`);
-        data = fileTranslations;
+        data = translations;
       } else {
         // the file exists, we modify it where needed
         console.log(`Updating ${filename}`);
@@ -72,37 +70,21 @@ function load() {
         data = JSON.parse(content);
         let changed = false;
 
-        // add new files / translations
-        for (const [file, translations] of Object.entries(fileTranslations)) {
-          if (!data.hasOwnProperty(file)) {
-            console.log(`  + adding ${file}`);
-            data[file] = translations;
+        // add new translations
+        for (const [key, translation] of Object.entries(translations)) {
+          if (!data.hasOwnProperty(key)) {
+            console.log(`  + ${key}: ${translation}`);
+            data[key] = translation;
             changed = true;
-          } else {
-            for (const [key, translation] of Object.entries(translations)) {
-              if (!data[file].hasOwnProperty(key)) {
-                console.log(`  + ${key}: ${translation}`);
-                data[file][key] = translation;
-                changed = true;
-              }
-            }
           }
         }
 
-        // remove obsolete files / translations
-        for (const [file, translations] of Object.entries(data)) {
-          if (!allKeys.hasOwnProperty(file)) {
-            console.log(`  - removing ${file}`);
-            delete data[file];
+        // remove obsolete translations
+        for (const [key, translation] of Object.entries(translations)) {
+          if (!allKeys.includes(key)) {
+            console.log(`  - ${key}: ${translation}`);
+            delete translations[key];
             changed = true;
-          } else {
-            for (const [key, translation] of Object.entries(translations)) {
-              if (!allKeys[file].includes(key)) {
-                console.log(`  - ${key}: ${translation}`);
-                delete translations[key];
-                changed = true;
-              }
-            }
           }
         }
 
@@ -124,16 +106,15 @@ function save() {
     files.forEach(file => {
       let lang = file.replace(/^.*words-([^.]+).json$/, '$1');
       let data = JSON.parse(fs.readFileSync(file, { encoding: 'utf-8' }));
-      for (const [file, translations] of Object.entries(data)) {
-        allTranslations[file] = allTranslations[file] || {};
-        for (const [key, translation] of Object.entries(translations)) {
-          allTranslations[file][key] = allTranslations[file][key] || {};
-          allTranslations[file][key][lang] = translation;
-        }
+      for (const [fullKey, translation] of Object.entries(data)) {
+        const [fileName, key] = fullKey.split('#', 2);
+        allTranslations[fileName] = allTranslations[fileName] || {};
+        allTranslations[fileName][key] = allTranslations[fileName][key] || {};
+        allTranslations[fileName][key][lang] = translation;
       }
     });
 
-    //console.log(allTranslations);
+    console.log(allTranslations);
     for (const [file, translations] of Object.entries(allTranslations)) {
       if (!fs.existsSync(file)) {
         console.log(`Couldn't find ${file}, ignoring it!`);
