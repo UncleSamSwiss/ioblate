@@ -35,8 +35,11 @@
   "homepage": "https://github.com/UncleSamSwiss/ioblate",
   "readme": "https://github.com/UncleSamSwiss/ioblate/blob/master/README.md",
   "dependencies": {
+    "chardet": "^0.7.0",
     "esprima": "^4.0.1",
     "glob": "^7.1.3",
+    "gumbo-parser": "^0.3.0",
+    "iconv-lite": "^0.4.24",
     "safe-eval": "^0.4.1"
   }
 }
